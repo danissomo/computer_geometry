@@ -55,28 +55,9 @@ function main() {
 
   // look up where the vertex data needs to go.
   var positionAttributeLocation = gl.getAttribLocation(program, "a_position");
-  //var resolutionUniformLocation = gl.getUniformLocation(program, "u_resolution");
-
- 
-
-  // Create a buffer and put three 2d clip space points in it
   var positionBuffer = gl.createBuffer();
-
-  // Bind it to ARRAY_BUFFER (think of it as ARRAY_BUFFER = positionBuffer)
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
-  // var positions = [
-  //   10, 20,
-  //   80, 20,
-  //   10, 30,
-  //   10, 30,
-  //   80, 20,
-  //   80, 30,
-  // ];
-  // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
-
-  // code above this line is initialization code.
-  // code below this line is rendering code.
 
   webglUtils.resizeCanvasToDisplaySize(gl.canvas);
 
@@ -97,7 +78,7 @@ function main() {
 
   // Bind the position buffer.
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
+  setCube(gl, 200, 200, 200);
   // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
   var size = 3;          // 2 components per iteration
   var type = gl.FLOAT;   // the data is 32bit floats
@@ -118,17 +99,16 @@ function main() {
 }
 angle=0;
 function redrawCube(gl){
-  var  len = setCube(
-    gl, 200, 200, 0 , 200, 200, 200, 30, angle);
+  updateCube(
+    gl, gl.canvas.width/2, gl.canvas.height/2, 3,  30, angle);
 
-// задаём случайный цвет
 
-gl.clearColor(0, 0, 0, 0);
-gl.clear(gl.COLOR_BUFFER_BIT);
-// отрисовка прямоугольника
-gl.drawArrays(gl.TRIANGLES, 0, 6*3);
-if(angle == 360) angle =0;
-angle++;
+  gl.clearColor(0, 0, 0, 0);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  // отрисовка прямоугольника
+  gl.drawArrays(gl.TRIANGLES, 0, 6*3);
+  if(angle == 360) angle =0;
+  angle++;
 }
 
 
@@ -136,32 +116,24 @@ function randomInt(range) {
   return Math.floor(Math.random() * range);
 }
 
-function setRectangle(gl, x, y, width, height) {
-  var x1 = x;
-  var x2 = x + width;
-  var y1 = y;
-  var y2 = y + height;
- 
-  // ПРИМ.: gl.bufferData(gl.ARRAY_BUFFER, ...) воздействует
-  // на буфер, который привязан к точке привязке `ARRAY_BUFFER`,
-  // но таким образом у нас будет один буфер. Если бы нам понадобилось
-  // несколько буферов, нам бы потребовалось привязать их сначала к `ARRAY_BUFFER`.
- 
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-     x1, y1,
-     x2, y1,
-     x1, y2,
-     x1, y2,
-     x2, y1,
-     x2, y2]), gl.STATIC_DRAW);
+
+
+function updateCube(gl, x, y, z,  xrot, yrot, zrot =0 ){
+  var matrix = m4.projection(gl.canvas.clientWidth, gl.canvas.clientHeight,4000);
+    matrix = m4.translate(matrix, x, y, z);
+    matrix = m4.xRotate(matrix, xrot * Math.PI / 180);
+    matrix = m4.yRotate(matrix, yrot * Math.PI / 180);
+    matrix = m4.zRotate(matrix, 0* Math.PI / 180);
+    matrix = m4.scale(matrix, 1, 1, 1);
+    gl.uniformMatrix4fv(matrixLocation, false, matrix);
 }
-function setCube(gl, x, y, z, width, height, leght, xrot, yrot){
-  var x1 = x;
-  var x2 = x+width;
-  var y1= y;
-  var y2 = y+ height;
-  var z1 = z;
-  var z2 = z+ leght;
+function setCube(gl,  width, height, length){
+  var x1 = -width/2.0;
+  var x2 = -width/2.0+  width;
+  var y1= -height/2.0;
+  var y2 = height- height/2.0;
+  var z1 = -length/2.0;
+  var z2 = length - length/2.0;
   var buf =new Float32Array([
     x1, y1, z1,
     x2, y1, z1,
@@ -184,13 +156,7 @@ function setCube(gl, x, y, z, width, height, leght, xrot, yrot){
     x2, y1, z2,
     x2, y1, z1
   ])
-  var matrix = m4.projection(gl.canvas.clientWidth, gl.canvas.clientHeight,4000);
-    matrix = m4.translate(matrix, 450, 100, 3);
-    matrix = m4.xRotate(matrix, xrot * Math.PI / 180);
-    matrix = m4.yRotate(matrix, yrot * Math.PI / 180);
-    matrix = m4.zRotate(matrix, 0* Math.PI / 180);
-    matrix = m4.scale(matrix, 1, 1, 1);
-    gl.uniformMatrix4fv(matrixLocation, false, matrix);
+  
     
   gl.bufferData(gl.ARRAY_BUFFER, buf , gl.STATIC_DRAW);
   return buf.length;
