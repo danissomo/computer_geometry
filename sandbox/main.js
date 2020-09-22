@@ -41,24 +41,28 @@ function main() {
   if (!gl) {
     return;
   }
-
-  // Get the strings for our GLSL shaders
+  gl.enable(gl.CULL_FACE);
+  gl.enable(gl.DEPTH_TEST);
+  //генерируем шейдеры из файла
   var vertexShaderSource = getSourceSynch("/sandbox/vertex.vert");
   var fragmentShaderSource = getSourceSynch("/sandbox/frag.frag");
-
-  // create GLSL shaders, upload the GLSL source, compile the shaders
   var vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
   var fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
 
-  // Link the two shaders into a program
   var program = createProgram(gl, vertexShader, fragmentShader);
 
-  // look up where the vertex data needs to go.
+  
   var positionAttributeLocation = gl.getAttribLocation(program, "a_position");
   var positionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
-
+  
+  // Create a buffer to put colors in
+  var colorLocation = gl.getAttribLocation(program, "a_color");
+  var colorBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+  setColors(gl);
+  
   webglUtils.resizeCanvasToDisplaySize(gl.canvas);
 
   // Tell WebGL how to convert from clip space to pixels
@@ -71,12 +75,16 @@ function main() {
   // Tell it to use our program (pair of shaders)
   gl.useProgram(program);
  
-  colorUniformLocation = gl.getUniformLocation(program, "u_color");
+  
   matrixLocation = gl.getUniformLocation(program, "u_matrix");
+  
   // Turn on the attribute
   gl.enableVertexAttribArray(positionAttributeLocation);
-
+  
   // Bind the position buffer.
+
+
+
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
   setCube(gl, 200, 200, 200);
   // Tell the attribute how to get data out of positionBuffer (ARRAY_BUFFER)
@@ -88,27 +96,57 @@ function main() {
   gl.vertexAttribPointer(
       positionAttributeLocation, size, type, normalize, stride, offset);
 
+  gl.enableVertexAttribArray(colorLocation);
+  gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+
+  // Tell the attribute how to get data out of colorBuffer (ARRAY_BUFFER)
+  var size = 3;                 // 3 components per iteration
+  var type = gl.UNSIGNED_BYTE;  // the data is 8bit unsigned values
+  var normalize = true;         // normalize the data (convert from 0-255 to 0-1)
+  var stride = 0;               // 0 = move forward size * sizeof(type) each iteration to get the next position
+  var offset = 0;               // start at the beginning of the buffer
+  gl.vertexAttribPointer(
+      colorLocation, size, type, normalize, stride, offset);
   // draw
   webglUtils.resizeCanvasToDisplaySize(gl.canvas);
-  gl.uniform4f(colorUniformLocation, Math.random(), Math.random(), Math.random(), 1);
+  
     // задаём произвольный прямоугольник
     // Запись будет происходить в positionBuffer,
     // так как он был привязан последник к
     // точке связи ARRAY_BUFFER
-  setInterval(redrawCube, 32, gl );
-}
-angle=0;
-function redrawCube(gl){
-  updateCube(
-    gl, gl.canvas.width/2, gl.canvas.height/2, 3,  30, angle);
+  setInterval(redrawCube, 32, gl , 'y');
+  setInterval(redrawCube, 32, gl, 'x' );
 
+}
+anglex=0;
+angley=0;
+agelez=0;
+function redrawCube(gl, axis){
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  switch (axis) {
+    case 'y':
+      updateCube(
+        gl, gl.canvas.width/2, gl.canvas.height/2, 3,  anglex, angley);
+        angley++;
+      break;
+    case 'x':
+      updateCube(
+        gl, gl.canvas.width/2, gl.canvas.height/2, 3, anglex , angley);
+        anglex++;
+    default:
+      break;
+  }
+  
+  
 
   gl.clearColor(0, 0, 0, 0);
   gl.clear(gl.COLOR_BUFFER_BIT);
   // отрисовка прямоугольника
-  gl.drawArrays(gl.TRIANGLES, 0, 6*3);
-  if(angle == 360) angle =0;
-  angle++;
+  gl.drawArrays(gl.TRIANGLES, 0, 6*6);
+  if(angley == 360) angley =0;
+ 
+  if(anglex == 360) anglex =0;
+  
 }
 
 
@@ -119,11 +157,12 @@ function randomInt(range) {
 
 
 function updateCube(gl, x, y, z,  xrot, yrot, zrot =0 ){
+  
   var matrix = m4.projection(gl.canvas.clientWidth, gl.canvas.clientHeight,4000);
     matrix = m4.translate(matrix, x, y, z);
     matrix = m4.xRotate(matrix, xrot * Math.PI / 180);
     matrix = m4.yRotate(matrix, yrot * Math.PI / 180);
-    matrix = m4.zRotate(matrix, 0* Math.PI / 180);
+    matrix = m4.zRotate(matrix, zrot* Math.PI / 180);
     matrix = m4.scale(matrix, 1, 1, 1);
     gl.uniformMatrix4fv(matrixLocation, false, matrix);
 }
@@ -135,31 +174,103 @@ function setCube(gl,  width, height, length){
   var z1 = -length/2.0;
   var z2 = length - length/2.0;
   var buf =new Float32Array([
+    x2, y1, z1,
     x1, y1, z1,
-    x2, y1, z1,
-    x1, y2, z1,
     x1, y2, z1,
     x2, y1, z1,
+    x1, y2, z1,
     x2, y2, z1,
     //2
+    x2, y1, z2,
+    x1, y2, z2,
     x1, y1, z2,
     x2, y1, z2,
-    x1, y2, z2,
-    x1, y2, z2,
-    x2, y1, z2,
     x2, y2, z2,
+    x1, y2, z2,
     //3, 
     x1, y1, z1,
     x2, y1, z1,
     x1, y1, z2,
-    x1, y1, z2,
     x2, y1, z2,
-    x2, y1, z1
+    x1, y1, z2,
+    x2, y1, z1,
+    //4
+    x2, y2, z1,
+    x1, y2, z1,
+    x1, y2, z2,
+    x1, y2, z2,
+    x2, y2, z2,
+    x2, y2, z1,
+    //5
+    x1, y2, z1,
+    x1, y1, z1,
+    x1, y1, z2,
+    x1, y2, z2,
+    x1, y2, x1,
+    x1, y1, z2,
+    //6
+    x2, y1, z1,
+    x2, y2, z1,
+    x2, y1, z2,
+    x2, y2, x1,
+    x2, y2, z2,
+    x2, y1, z2,
   ])
   
     
   gl.bufferData(gl.ARRAY_BUFFER, buf , gl.STATIC_DRAW);
   return buf.length;
+}
+function setColors(gl) {
+  gl.bufferData(
+      gl.ARRAY_BUFFER,
+      new Uint8Array([
+          // left column front
+          250,  0, 120,
+          50,  0, 120,
+          200,  0, 120,
+          200,  0, 120,
+          200,  0, 120,
+          50,  0, 120,
+
+          // top rung front
+        50,  0, 120,
+        50,  0, 120,
+        200,  0, 120,
+        200,  0, 120,
+        200,  0, 120,
+        50,  0, 120,
+
+          // middle rung front
+          0, 183, 226,
+          0, 183, 226,
+          0, 183, 226,
+          0, 183, 226,
+          0, 183, 226,
+          0, 183, 226,
+
+          50,  0, 120,
+          50,  0, 120,
+          200,  0, 120,
+          200,  0, 120,
+          200,  0, 120,
+          50,  0, 120,
+
+          250,  0, 120,
+          50,  0, 120,
+          200,  0, 120,
+          200,  0, 120,
+          200,  0, 120,
+          50,  0, 120,
+
+          50,  0, 120,
+          50,  0, 120,
+          200,  0, 120,
+          200,  0, 120,
+          200,  0, 120,
+          50,  0, 120,
+        ]),
+      gl.STATIC_DRAW);
 }
 var m4 = {
 
