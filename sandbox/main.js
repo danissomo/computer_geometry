@@ -53,7 +53,7 @@ function main() {
   var positionAttributeLocation = gl.getAttribLocation(program, "a_position");
   var positionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-  setCube(gl, 400, 200, 100);
+  setCube(gl, 50, 50, 50);
   // Create a buffer to put colors in
   var colorLocation = gl.getAttribLocation(program, "a_color");
   var colorBuffer = gl.createBuffer();
@@ -75,7 +75,7 @@ function main() {
   
   matrixLocation = gl.getUniformLocation(program, "u_matrix");
   var fudgeLocation = gl.getUniformLocation(program, "u_fudgeFactor");
-  var fudgeFactor =  6;
+  var fudgeFactor =  0.8;
   gl.uniform1f(fudgeLocation, fudgeFactor);
   // Turn on the attribute
   gl.enableVertexAttribArray(positionAttributeLocation);
@@ -108,26 +108,31 @@ function main() {
 
   // draw
   webglUtils.resizeCanvasToDisplaySize(gl.canvas);
-  setInterval(redrawCube, 32, gl , 'y');
-  setInterval(redrawCube, 32, gl, 'x' );
 
+  for(var ii = 0; ii< 10; ii++ )
+    for(var jj = 0; jj < 10; jj++){
+      redrawCube( gl , 'y', ii*100 + gl.canvas.width/4 , gl.canvas.height/2+200, jj*100 )
+    }
+  // setInterval(redrawCube, 32, gl , 'y', gl.canvas.width/2, gl.canvas.height/2, 3 );
+  // setInterval(redrawCube, 32, gl, 'x', gl.canvas.width/2-200*2, gl.canvas.height/2, 3);
+  // setInterval(redrawCube, 32, gl, 'x', gl.canvas.width/2+200*2, gl.canvas.height/2, 3 );
 }
 
 
 anglex=0;
 angley=0;
 agelez=0;
-function redrawCube(gl, axis){
-  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+function redrawCube(gl, axis, x, y, z){
+  //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   switch (axis) {
     case 'y':
       updateCube(
-        gl, gl.canvas.width/2, gl.canvas.height/2, 3,  anglex, angley);
+        gl, x, y, z,  anglex, angley);
         angley++;
       break;
     case 'x':
       updateCube(
-        gl, gl.canvas.width/2, gl.canvas.height/2, 3, anglex , angley);
+        gl, x, y, z, anglex , angley);
         anglex++;
     default:
       break;
@@ -135,8 +140,8 @@ function redrawCube(gl, axis){
   
   
 
-  gl.clearColor(0, 0, 0, 0);
-  gl.clear(gl.COLOR_BUFFER_BIT);
+  //gl.clearColor(0, 0, 0, 0);
+  //gl.clear(gl.COLOR_BUFFER_BIT);
   // отрисовка прямоугольника
   gl.drawArrays(gl.TRIANGLES, 0, 6*6);
   if(angley == 360) angley =0;
@@ -147,7 +152,7 @@ function redrawCube(gl, axis){
 
 function updateCube(gl, x, y, z,  xrot, yrot, zrot =0 ){
   
-  var matrix = m4.projection(gl.canvas.clientWidth, gl.canvas.clientHeight,4000);
+  var matrix = m4.projection(gl.canvas.clientWidth, gl.canvas.clientHeight, 1000);
     matrix = m4.translate(matrix, x, y, z);
     matrix = m4.xRotate(matrix, xrot * Math.PI / 180);
     matrix = m4.yRotate(matrix, yrot * Math.PI / 180);
