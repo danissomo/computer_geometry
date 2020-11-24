@@ -1,14 +1,15 @@
 // 04.js
 
 "use strict";
-
+const {mat2, mat3, mat4, vec2, vec3, vec4} = glMatrix;
 // Vertex shader program
 const VSHADER_SOURCE =
     '#version 100\n' +
   'attribute vec4 a_Position;\n' +
   'attribute float  a_Size;\n'+
+  'uniform mat4 u_Mat;'+
   'void main() {\n' +
-  '  gl_Position = a_Position;\n' +
+  '  gl_Position = u_Mat * a_Position;\n' +
   '  gl_PointSize = a_Size;\n' +
   '}\n';
 
@@ -47,9 +48,15 @@ function main() {
 
   // Clear <canvas>
   gl.clear(gl.COLOR_BUFFER_BIT);
-
+  const u_Mat = gl.getUniformLocation(gl.program, 'u_Mat');
+  let rotationmatrix = mat4.create();
+  mat4.fromZRotation(rotationmatrix, 0 );
+  gl.uniformMatrix4fv(u_Mat, 0, rotationmatrix);
   // Draw three points
-    gl.drawArrays(gl.POINTS, 0, n);
+  gl.drawArrays(gl.TRIANGLES, 0, n);
+  mat4.fromZRotation(rotationmatrix, -30*Math.PI/180.0 );
+  gl.uniformMatrix4fv(u_Mat, 0, rotationmatrix);
+  gl.drawArrays(gl.TRIANGLES, 0, n);
 }
 
 function initVertexBuffers(gl) {
@@ -62,17 +69,7 @@ function initVertexBuffers(gl) {
     const size = new Float32Array([
       10.0, 20.0, 30.0
     ])
-    //const vertices = new Float32Array(2 * n);
-
-    //vertices[0] = 0.0;
-    //vertices[1] = 0.5;
-    //vertices[2] = -0.5;
-    //vertices[3] = -0.5;
-    //vertices[4] = 0.5;
-    //vertices[5] = -0.5;
-
-  // Create a buffer object
-  const vertexBuffer = gl.createBuffer();
+    const vertexBuffer = gl.createBuffer();
   if (!vertexBuffer) {
     console.log('Failed to create the buffer object');
     return -1;
@@ -86,6 +83,7 @@ function initVertexBuffers(gl) {
   gl.bufferSubData(gl.ARRAY_BUFFER, vertices.BYTES_PER_ELEMENT*6, size);
   const a_Position = gl.getAttribLocation(gl.program, 'a_Position');
   const a_Size = gl.getAttribLocation(gl.program, 'a_Size');
+  
   if (a_Position < 0) {
     console.log('Failed to get the storage location of a_Position');
     return -1;
