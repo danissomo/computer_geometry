@@ -55,7 +55,7 @@ function main() {
   // Draw three points
   gl.drawArrays(gl.TRIANGLES, 0, n);
   setTimeout(function(){
-  mat4.fromZRotation(rotationmatrix, 0 , 30*Math.PI/180 );
+  mat4.fromZRotation(rotationmatrix, 60*Math.PI/180 );
   mat4.translate(rotationmatrix,rotationmatrix, vec3.fromValues(0.5, 0.1, 1) );
   gl.uniformMatrix4fv(u_Mat, 0, rotationmatrix);
   // Draw three points
