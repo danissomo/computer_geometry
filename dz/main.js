@@ -1,7 +1,7 @@
 //у меня в vscode стоит расширение, которое поднимает сервер 
 //так что пользуюсь им и получаю шейдеры из файла
-vertexShaderSource = getSourceSynch("/sandbox/vertex.vert");
-fragmentShaderSource = getSourceSynch("/sandbox/frag.frag");
+vertexShaderSource = getSourceSynch("vertex.vert");
+fragmentShaderSource = getSourceSynch("frag.frag");
 
 function createShader(gl, type, source) {
   var shader = gl.createShader(type);
@@ -108,7 +108,7 @@ function main() {
   var i = 0;
   setInterval(function(){
     //компаную матрицу позиционирования
-  var matrix = m4.projection(gl.canvas.clientWidth, gl.canvas.clientHeight, 1000); //перспектива просто чтобы было
+  var matrix = m4.projection(gl.canvas.clientWidth, gl.canvas.clientHeight, 1000);
   matrix = m4.translate(matrix, gl.canvas.width / 2, gl.canvas.height / 2, 3); // ставлю в центр куб
   //генерирую матрицу поворота вокруг оси параллельной Oy
   matrixRot = m4.yRotate( m4.translation(-100, 0 , -100),i/2); //1

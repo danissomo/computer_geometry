@@ -1,8 +1,8 @@
 //у меня в vscode стоит расширение, которое поднимает сервер 
 //так что пользуюсь им и получаю шейдеры из файла
-vertexShaderSource = getSourceSynch("/sandbox/vertex.vert");
-fragmentShaderSource = getSourceSynch("/sandbox/frag.frag");
-
+vertexShaderSource = getSourceSynch("vertex.vert");
+fragmentShaderSource = getSourceSynch("frag.frag");
+const {mat2, mat3, mat4, vec2, vec3, vec4} = glMatrix;
 function createShader(gl, type, source) {
   var shader = gl.createShader(type);
   gl.shaderSource(shader, source);
@@ -29,7 +29,15 @@ function createProgram(gl, vertexShader, fragmentShader) {
   console.log(gl.getProgramInfoLog(program));
   gl.deleteProgram(program);
 }
-
+ function projection(width, height, depth) {
+  // Note: This matrix flips the Y axis so 0 is at the top.
+  return [
+     2 / width, 0, 0, 0,
+     0, -2 / height, 0, 0,
+     0, 0, 2 / depth, 0,
+    -1, 1, 0, 1,
+  ];
+}
 
 
 function main() {
@@ -108,13 +116,13 @@ function main() {
   var i = 0;
   setInterval(function(){
     //компаную матрицу позиционирования
-  var matrix = m4.projection(gl.canvas.clientWidth, gl.canvas.clientHeight, 1000); //перспектива просто чтобы было
-  matrix = m4.translate(matrix, gl.canvas.width / 2, gl.canvas.height / 2, 3); // ставлю в центр куб
+   var matrix = projection(gl.canvas.clientWidth, gl.canvas.clientHeight, 1000);
+ // mat4.perspective(matrix, 120,  gl.canvas.width/gl.canvas.height, 0.1, null );
+  mat4.translate(matrix, matrix, vec3.fromValues( gl.canvas.width / 2, gl.canvas.height / 2, 3)); // ставлю в центр куб
   //генерирую матрицу поворота вокруг оси параллельной Oy
-  matrixRot = m4.yRotate( m4.translation(-100, 0 , -100),i/2); //1
-  matrixRot = m4.translate(matrixRot, 100,0 , 100); //2
-  matrix = m4.multiply(  matrix, matrixRot); // применяю матрицу поворота вокруг оси параллельной Oy
-
+  mat4.translate(matrix, matrix,vec3.fromValues(-100, 0, -100));
+  mat4.rotateY(matrix, matrix, i*Math.PI/180.0);
+  mat4.translate(matrix, matrix,vec3.fromValues(100,0 , 100));
   // рисуем
   gl.uniformMatrix4fv(matrixLocation, false, matrix); 
   gl.drawArrays(gl.TRIANGLES, 0, 6 * 6);
