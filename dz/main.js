@@ -111,7 +111,7 @@ function main() {
   var matrix = m4.projection(gl.canvas.clientWidth, gl.canvas.clientHeight, 1000);
   matrix = m4.translate(matrix, gl.canvas.width / 2, gl.canvas.height / 2, 3); // ставлю в центр куб
   //генерирую матрицу поворота вокруг оси параллельной Oy
-  matrixRot = m4.yRotate( m4.translation(-100, 0 , -100),i/2); //1
+  matrixRot = m4.yRotate( m4.translation(-100, 0 , -100),i*Math.PI/180.0); //1
   matrixRot = m4.translate(matrixRot, 100,0 , 100); //2
   matrix = m4.multiply(  matrix, matrixRot); // применяю матрицу поворота вокруг оси параллельной Oy
 

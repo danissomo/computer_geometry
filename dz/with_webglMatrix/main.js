@@ -1,4 +1,4 @@
-//у меня в vscode стоит расширение, которое поднимает сервер 
+//у меня в vscode стоит расширение, которое поднимает сервер
 //так что пользуюсь им и получаю шейдеры из файла
 vertexShaderSource = getSourceSynch("vertex.vert");
 fragmentShaderSource = getSourceSynch("frag.frag");
