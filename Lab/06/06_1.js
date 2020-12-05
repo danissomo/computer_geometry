@@ -50,7 +50,13 @@ function main() {
   gl.clear(gl.COLOR_BUFFER_BIT);
 
   // Draw three points
-    gl.drawArrays(gl.TRIANGLES, 0, n);
+  const u_Mat = gl.getUniformLocation(gl.program, 'u_Mat');
+  let rotationmatrix = mat4.create();
+  gl.uniformMatrix4fv(u_Mat, 0, rotationmatrix);
+  gl.drawArrays(gl.TRIANGLES, 0, n);
+  mat4.fromTranslation(rotationmatrix, vec3.fromValues(0.2, 0.2, 0) );
+  gl.uniformMatrix4fv(u_Mat, 0, rotationmatrix);
+  gl.drawArrays(gl.TRIANGLES, 0, n);
 }
 
 function initVertexBuffers(gl) {
@@ -77,10 +83,8 @@ function initVertexBuffers(gl) {
   gl.bufferSubData(gl.ARRAY_BUFFER, vertices.BYTES_PER_ELEMENT*6, size);
   const a_Position = gl.getAttribLocation(gl.program, 'a_Position');
   const a_Size = gl.getAttribLocation(gl.program, 'a_Size');
-  const u_Mat = gl.getUniformLocation(gl.program, 'u_Mat');
-  let rotationmatrix = mat4.create();
-  mat4.fromZRotation(rotationmatrix, -10*Math.PI/180.0 );
-  gl.uniformMatrix4fv(u_Mat, 0, rotationmatrix);
+  
+  
   if (a_Position < 0) {
     console.log('Failed to get the storage location of a_Position');
     return -1;
