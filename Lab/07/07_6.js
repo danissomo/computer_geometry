@@ -12,73 +12,42 @@ function setCube(width, height, length) {
   var buf = new Float32Array([
     x1, y1, z1,
     x2, y1, z1,
-
-    x2, y1, z1,
-    x2, y2, z1,
-
     x2, y2, z1,
     x1, y2, z1,
-
-    x1, y2, z1,
-    x1, y1, z1,
-
-    x1, y1, z1,
-    x1, y1, z2,
-
-    x2, y1, z1,
-    x2, y1, z2,
-
-    x2, y2, z1,
-    x2, y2, z2,
-
-    x1, y2, z1,
-    x1, y2, z2,
-
     x1, y1, z2,
     x2, y1, z2,
-
-    x2, y1, z2,
-    x2, y2, z2,
-
     x2, y2, z2,
     x1, y2, z2,
-
-    x1, y2, z2,
-    x1, y1, z2
-
   ])
 
 
 
   return buf;
 }
+const indices = [
+  0, 1,
+  1, 2,
+  2, 3,
+  3, 0,
+  3, 7,
+  0, 4,
+  1, 5,
+  2, 6,
+  4, 5,
+  5, 6,
+  6, 7,
+  7, 4
+];
 function setColors() {
   return new Uint8Array([
-    0,0,255,
-    0,0,255,
-    0,0,255,
-    0,0,255,
-    0,0,255,
-    0,0,255,
-    0,0,255,
-    0,0,255,
-    0,0,255,
-    0,0,255,
-    0,0,255,
-    0,0,255,
-    255,0,0,
-    255,0,0,
-    255,0,0,
-    255,0,0,
-    255,0,0,
-    255,0,0,
-    255,0,0,
-    255,0,0,
-    255,0,0,
-    255,0,0,
-    255,0,0,
-    255,0,0,
-    255,0,0,
+    0, 0, 255,
+    100, 0, 25,
+    0, 0, 255,
+    0, 0, 255,
+    0, 0, 255,
+    0, 0, 255,
+    255, 0, 255,
+    19, 100, 100,
   ]);
 }
 // Vertex shader program
@@ -127,32 +96,36 @@ function main() {
   // Specify the color for clearing <canvas>
   gl.clearColor(0, 0, 0, 0);
 
+  gl.enable(gl.DEPTH_TEST);
+  gl.clear(gl.DEPTH_BUFFER_BIT);
   // Clear <canvas>
   const u_Mat = gl.getUniformLocation(gl.program, 'u_Mat');
   let rotationmatrix = mat4.create();
 
   gl.uniformMatrix4fv(u_Mat, 0, rotationmatrix);
 
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  gl.drawArrays(gl.LINES, 0, n);
-  mat4.fromTranslation(rotationmatrix, vec3.fromValues(0, 0, 0));
-  //получаю вид задней грани (красная) тк webgl рисует из массива последовательно в результате просиходит наложение 
-  //линий тех, что идут в массиве последними 
-
-  //для задней (красная)
-  //mat4.lookAt(rotationmatrix, vec3.fromValues(0, 0, 1), vec3.fromValues(0,0,0), vec3.fromValues(0, 1, 0));
-  //для передней(синяя)
-  // mat4.lookAt(rotationmatrix, vec3.fromValues(0, 0, -1), vec3.fromValues(0,0,0), vec3.fromValues(0, 1, 0));
+  mat4.frustum(rotationmatrix, -0.5, 0.5, -0.5, 0.5, -1, 1);
+  mat4.translate(rotationmatrix, rotationmatrix, vec3.fromValues(0, 0, -2));
+  mat4.rotateY(rotationmatrix, rotationmatrix, 35 * Math.PI / 180);
   gl.uniformMatrix4fv(u_Mat, 0, rotationmatrix);
-  gl.drawArrays(gl.LINES, 0, n);
+  //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+  
 
+
+  var primitiveType = gl.LINES;
+  var offset = 0;
+  var count = indices.length;
+  var indexType = gl.UNSIGNED_SHORT;
+  gl.drawElements(primitiveType, count, indexType, offset);
 
 }
 
 function initVertexBuffers(gl) {
   let vertices = setCube(1.0, 1.0, 1.0);
   let color = setColors();
-  const n = vertices.length; // The number of vertices
+  const n = vertices.length*indices.length; // The number of vertices
 
 
   const vertexBuffer = gl.createBuffer();
@@ -164,9 +137,20 @@ function initVertexBuffers(gl) {
   // Bind the buffer object to target
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
   // Write date into the buffer object
-  gl.bufferData(gl.ARRAY_BUFFER, vertices.BYTES_PER_ELEMENT * vertices.length + color.BYTES_PER_ELEMENT * color.length, gl.STATIC_DRAW);
+  gl.bufferData(gl.ARRAY_BUFFER,  vertices.BYTES_PER_ELEMENT * vertices.length+ color.BYTES_PER_ELEMENT * color.length, gl.STATIC_DRAW);
   gl.bufferSubData(gl.ARRAY_BUFFER, 0, vertices);
   gl.bufferSubData(gl.ARRAY_BUFFER, vertices.BYTES_PER_ELEMENT * vertices.length, color);
+
+  const indexBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+  
+  gl.bufferData(
+    gl.ELEMENT_ARRAY_BUFFER,
+    new Uint16Array(indices),
+    gl.STATIC_DRAW
+  );
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+
   const a_Position = gl.getAttribLocation(gl.program, 'a_Position');
   const a_Color = gl.getAttribLocation(gl.program, 'a_Color');
   if (a_Color < 0) console.log("a_Color < 0 : " + a_Color);

@@ -126,24 +126,27 @@ function main() {
 
   // Specify the color for clearing <canvas>
   gl.clearColor(0, 0, 0, 0);
-
+  
+  gl.enable(gl.DEPTH_TEST);
+  gl.clear(gl.DEPTH_BUFFER_BIT);
   // Clear <canvas>
   const u_Mat = gl.getUniformLocation(gl.program, 'u_Mat');
   let rotationmatrix = mat4.create();
 
   gl.uniformMatrix4fv(u_Mat, 0, rotationmatrix);
 
-
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.drawArrays(gl.LINES, 0, n);
   mat4.fromTranslation(rotationmatrix, vec3.fromValues(0, 0, 0));
-  //получаю вид задней грани (красная) тк webgl рисует из массива последовательно в результате просиходит наложение 
-  //линий тех, что идут в массиве последними 
+
+  //по дефолту получаю вид передней грани (синяя) тк webgl теперь учитывае глубину
 
   //для задней (красная)
   //mat4.lookAt(rotationmatrix, vec3.fromValues(0, 0, 1), vec3.fromValues(0,0,0), vec3.fromValues(0, 1, 0));
   //для передней(синяя)
   // mat4.lookAt(rotationmatrix, vec3.fromValues(0, 0, -1), vec3.fromValues(0,0,0), vec3.fromValues(0, 1, 0));
   gl.uniformMatrix4fv(u_Mat, 0, rotationmatrix);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.drawArrays(gl.LINES, 0, n);
 
 
