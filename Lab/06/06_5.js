@@ -55,7 +55,10 @@ function main() {
   // Draw three points
   gl.drawArrays(gl.TRIANGLES, 0, n);
   setTimeout(function(){
-  mat4.fromTranslation(rotationmatrix,  vec3.fromValues(0.5, 0.1, 1)  );
+  //вызов функций для создании матрицы преобразования происходит в обратном порядке
+  //т.е. для получения сначала вращения вокруг оси а затем перемещения
+  //нужно создать матрицу перемещения а затем вызвать поворот вокруг оси
+  mat4.fromTranslation(rotationmatrix,  vec3.fromValues(0.5, 0, 0)  );
   mat4.rotateZ(rotationmatrix, rotationmatrix , 30*Math.PI/180 );
   gl.uniformMatrix4fv(u_Mat, 0, rotationmatrix);
   // Draw three points

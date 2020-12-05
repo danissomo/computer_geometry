@@ -102,6 +102,5 @@ function setCube(gl,  width, height, length){
             200,  0, 120,
             200,  0, 120,
             50,  0, 120,
-          ]),
-        gl.STATIC_DRAW);
+          ]);
   }
