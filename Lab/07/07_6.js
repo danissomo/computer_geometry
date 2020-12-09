@@ -78,14 +78,11 @@ function main() {
     console.log('Failed to get the rendering context for WebGL');
     return;
   }
-
-  // Initialize shaders
   if (!initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE)) {
     console.log('Failed to intialize shaders.');
     return;
   }
 
-  // Write the positions of vertices to a vertex shader
   const n = initVertexBuffers(gl);
   if (n < 0) {
     console.log('Failed to set the positions of the vertices');

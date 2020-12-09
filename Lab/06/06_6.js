@@ -58,16 +58,22 @@ function main() {
  
   let i = 0;
   let func = function(){
-    mat4.fromTranslation(rotationmatrix,  vec3.fromValues(0, 0, 0)  );
+    setTimeout(function(){
+      mat4.fromTranslation(rotationmatrix,  vec3.fromValues(0, 0, 0)  );
     mat4.rotateZ(rotationmatrix, rotationmatrix ,i*Math.PI/180 );
     gl.uniformMatrix4fv(u_Mat, 0, rotationmatrix);
     // Draw three points
-    i++;
       gl.drawArrays(gl.TRIANGLES, 0, n);
+      
+    
+      i++;
       requestAnimationFrame(func);
+    }, 1000/45);
+    
+    
   };
   requestAnimationFrame(func);
-     
+  
     
 }
 
