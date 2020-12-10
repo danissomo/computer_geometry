@@ -50,7 +50,7 @@ class cone {
     indexBuffer = []
     normalBuffer = []
     position = []
-    resolution = 15
+    resolution = 30
     rad = undefined
     height = undefined
     gl = undefined
@@ -139,15 +139,15 @@ class cone {
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexGLBuffer);
         const FSIZE = this.colorBuffer.BYTES_PER_ELEMENT * this.colorBuffer.length +
             this.vertBuffer.BYTES_PER_ELEMENT * this.vertBuffer.length +
-            3*this.normalBuffer.BYTES_PER_ELEMENT * this.normalBuffer.length;
+            3 * this.normalBuffer.BYTES_PER_ELEMENT * this.normalBuffer.length;
         const colorOffset = this.vertBuffer.BYTES_PER_ELEMENT * this.vertBuffer.length;
-        const normalOffset = colorOffset + this.colorBuffer.BYTES_PER_ELEMENT * this.colorBuffer.length;
+        const normalOffset = colorOffset // this.colorBuffer.BYTES_PER_ELEMENT * this.colorBuffer.length;
         let v = new Float32Array(this.vertBuffer), c = new Uint8Array(this.colorBuffer), n = new Float32Array(this.normalBuffer);
 
         gl.bufferData(gl.ARRAY_BUFFER, FSIZE, gl.STATIC_DRAW);
         gl.bufferSubData(gl.ARRAY_BUFFER, 0, v);
-        gl.bufferSubData(gl.ARRAY_BUFFER, colorOffset, c);
-        gl.bufferSubData(gl.ARRAY_BUFFER, 2*normalOffset, n);
+        // gl.bufferSubData(gl.ARRAY_BUFFER, colorOffset, c);
+        gl.bufferSubData(gl.ARRAY_BUFFER, normalOffset, n);
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexGLBuffer);
 
 
@@ -160,16 +160,17 @@ class cone {
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexGLBuffer);
 
         const a_Position = gl.getAttribLocation(gl.program, 'a_Position');
-        const a_Color = gl.getAttribLocation(gl.program, 'a_Color');
+        //const a_Color = gl.getAttribLocation(gl.program, 'a_Color');
         const a_Normal = gl.getAttribLocation(gl.program, 'a_Normal');
-        
-        gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0);
-        gl.vertexAttribPointer(a_Color, 3, gl.UNSIGNED_BYTE, true, 0, colorOffset);
-        gl.vertexAttribPointer(a_Normal, 3, gl.FLOAT, false, 0, 2* normalOffset) ;
-
         gl.enableVertexAttribArray(a_Position);
-        gl.enableVertexAttribArray(a_Color);
+        //gl.enableVertexAttribArray(a_Color);
         gl.enableVertexAttribArray(a_Normal);
+
+
+        gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0);
+        //gl.vertexAttribPointer(a_Color, 3, gl.UNSIGNED_BYTE, true, 0, colorOffset);
+        gl.vertexAttribPointer(a_Normal, 3, gl.FLOAT, false, 0, normalOffset);
+
 
     }
     constructor() {
@@ -257,18 +258,26 @@ function main() {
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             const u_Mat = gl.getUniformLocation(gl.program, 'u_Mat');
             let rotationmatrix = mat4.create();
-            mat4.frustum(rotationmatrix, -0.5, 0.5, 0.5, -0.5, -1, 1);
-            mat4.translate(rotationmatrix, rotationmatrix, vec3.fromValues(0, 0, -1.5));
-            mat4.rotateX(rotationmatrix, rotationmatrix, i * Math.PI / 180);
-            gl.uniformMatrix4fv(u_Mat, 0, rotationmatrix);
+            let perspective = [];
+            mat4.perspective(perspective, Math.PI/20, 1,  4 ,8);
+            mat4.lookAt(rotationmatrix, [0,0,6], [0,0,0], [0,1,0]);
+            let worldMatrix = mat4.rotateY(rotationmatrix, rotationmatrix, i * Math.PI / 180);
+            mat4.rotateX(rotationmatrix, rotationmatrix, 15*Math.PI/180)
+            let worldViewProjection= [];
+            mat4.multiply(worldViewProjection, perspective, rotationmatrix);
+            gl.uniformMatrix4fv(u_Mat, 0, worldViewProjection);
+            var colorLocation = gl.getUniformLocation(gl.program, "u_color");
+            var reverseLightDirectionLocation =
+                gl.getUniformLocation(gl.program, "u_reverseLightDirection");
+            gl.uniform4fv(colorLocation, [0.2, 1, 0.2, 1]); // зелёный
 
+            //Задаём направление света
+            gl.uniform3fv(reverseLightDirectionLocation,  vec3.normalize([], [1, -1, 0]));
+            var worldViewProjectionLocation =
+                gl.getUniformLocation(gl.program, "u_worldViewProjection");
+            var worldLocation = gl.getUniformLocation(gl.program, "u_world");
+            gl.uniformMatrix4fv(worldLocation, 0, worldMatrix);
             myCone.draw();
-            //myLine.draw();
-
-
-
-
-
             i++;
             requestAnimationFrame(f);
         }
@@ -283,18 +292,28 @@ function getRandomInt(max) {
 }
 const { mat2, mat3, mat4, vec2, vec3, vec4 } = glMatrix;
 const VSHADER_SOURCE =
+    'precision mediump float;\n' +
     'attribute vec4 a_Position, a_Color;\n' +
-    'attribute mediump vec4 a_Normal;\n' +
+    'attribute vec3 a_Normal;\n' +
+    'varying vec3 v_normal;\n' +
+    'uniform mat4 u_world;\n'+
     'uniform mat4 u_Mat;\n' +
-    'varying mediump vec4 v_Color;\n' +
+    'uniform vec3 u_reverseLightDirection;\n' +
     'void main() {\n' +
     '  gl_Position = u_Mat * a_Position;\n' +
-    'v_Color = a_Color  +  a_Normal;\n' +
+    'v_normal = mat3(u_world)  *a_Normal;\n' +
     '}\n';
 const FSHADER_SOURCE =
-    'varying mediump vec4 v_Color;\n' +
+    'precision mediump float;\n' +
+    'varying  vec4 v_Color;\n' +
+    'uniform vec3 u_reverseLightDirection;\n' +
+    'uniform vec4 u_color;\n' +
+    'varying vec3 v_normal;\n' +
     'void main() {\n' +
-    '  gl_FragColor = v_Color;\n' +
+    'vec3 normal = normalize(v_normal); \n' +
+    'float light = dot(normal, u_reverseLightDirection);\n' +
+    'gl_FragColor = u_color;\n' +
+    'gl_FragColor.rgb *= light;\n' +
     '}\n';
 const canvas = document.getElementById('webgl');
 const gl = getWebGLContext(canvas);
