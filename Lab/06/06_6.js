@@ -57,8 +57,10 @@ function main() {
   gl.drawArrays(gl.TRIANGLES, 0, n);
  
   let i = 0;
-  let func = function(){
-    setTimeout(function(){
+  let lastUpdate = null;
+  let func = function(t){
+    
+    if (!lastUpdate || t- lastUpdate >= 1000/45){
       mat4.fromTranslation(rotationmatrix,  vec3.fromValues(0, 0, 0)  );
     mat4.rotateZ(rotationmatrix, rotationmatrix ,i*Math.PI/180 );
     gl.uniformMatrix4fv(u_Mat, 0, rotationmatrix);
@@ -67,8 +69,11 @@ function main() {
       
     
       i++;
+     lastUpdate =t;
+    }
+    
       requestAnimationFrame(func);
-    }, 1000/45);
+   
     
     
   };
