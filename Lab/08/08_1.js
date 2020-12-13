@@ -247,22 +247,27 @@ function main() {
         console.log('Failed to intialize shaders.');
         return;
     }
-    gl.enable(gl.DEPTH_TEST);
-    gl.enable(gl.CULL_FACE);
+
+
+
     let myCone = new cone();
-    myCone.init(0.2, 0.6, gl, [100, 100, 0]);
+    myCone.init(1, 3, gl, [0.1, 0.1, 0]);
     let i = 0;
 
     requestAnimationFrame(
         function f(params) {
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+            //gl.enable(gl.CULL_FACE);
+            gl.enable(gl.DEPTH_TEST);
             const u_Mat = gl.getUniformLocation(gl.program, 'u_Mat');
             let rotationmatrix = mat4.create();
             let perspective = [];
-            mat4.perspective(perspective, Math.PI/20, 1,  4 ,8);
-            mat4.lookAt(rotationmatrix, [0,0,6], [0,0,0], [0,1,0]);
-            let worldMatrix = mat4.rotateY(rotationmatrix, rotationmatrix, i * Math.PI / 180);
-            mat4.rotateX(rotationmatrix, rotationmatrix, 15*Math.PI/180)
+            mat4.frustum(perspective, -1, 1, -1, 1, 1,  2000);
+            mat4.lookAt(rotationmatrix, [0,  -1.2, 2.2], [0, -0.5,0], [0,1,0]);
+
+            let worldMatrix =  mat4.rotateY([], mat4.create(), i * Math.PI / 180); 
+            mat4.rotateY (rotationmatrix, rotationmatrix, i * Math.PI / 180);
             let worldViewProjection= [];
             mat4.multiply(worldViewProjection, perspective, rotationmatrix);
             gl.uniformMatrix4fv(u_Mat, 0, worldViewProjection);
@@ -272,7 +277,7 @@ function main() {
             gl.uniform4fv(colorLocation, [0.2, 1, 0.2, 1]); // зелёный
 
             //Задаём направление света
-            gl.uniform3fv(reverseLightDirectionLocation,  vec3.normalize([], [1, -1, 0]));
+            gl.uniform3fv(reverseLightDirectionLocation, vec3.normalize([], [1, 0, 0]));
             var worldViewProjectionLocation =
                 gl.getUniformLocation(gl.program, "u_worldViewProjection");
             var worldLocation = gl.getUniformLocation(gl.program, "u_world");
@@ -296,7 +301,7 @@ const VSHADER_SOURCE =
     'attribute vec4 a_Position, a_Color;\n' +
     'attribute vec3 a_Normal;\n' +
     'varying vec3 v_normal;\n' +
-    'uniform mat4 u_world;\n'+
+    'uniform mat4 u_world;\n' +
     'uniform mat4 u_Mat;\n' +
     'uniform vec3 u_reverseLightDirection;\n' +
     'void main() {\n' +
@@ -317,4 +322,5 @@ const FSHADER_SOURCE =
     '}\n';
 const canvas = document.getElementById('webgl');
 const gl = getWebGLContext(canvas);
+
 
