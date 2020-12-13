@@ -137,7 +137,7 @@ function main() {
 
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.drawArrays(gl.LINES, 0, n);
-  mat4.frustum(rotationmatrix,-0.5 , 0.5,-0.5,0.5, -1, 1);
+  mat4.frustum(rotationmatrix,-1, 1, -1, 1, 1, 8);
   mat4.translate(rotationmatrix, rotationmatrix,  vec3.fromValues(0,0, -2));
   mat4.rotateY(rotationmatrix,rotationmatrix, 45*Math.PI/180);
   //по дефолту получаю вид передней грани (синяя) тк webgl теперь учитывае глубину

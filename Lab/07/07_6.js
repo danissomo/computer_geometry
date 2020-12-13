@@ -103,7 +103,7 @@ function main() {
 
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  mat4.frustum(rotationmatrix, -0.5, 0.5, -0.5, 0.5, -1, 1);
+  mat4.frustum(rotationmatrix, -1, 1, -1, 1, 1, 8);
   mat4.translate(rotationmatrix, rotationmatrix, vec3.fromValues(0, 0, -2));
   mat4.rotateY(rotationmatrix, rotationmatrix, 35 * Math.PI / 180);
   gl.uniformMatrix4fv(u_Mat, 0, rotationmatrix);
@@ -120,7 +120,7 @@ function main() {
 }
 
 function initVertexBuffers(gl) {
-  let vertices = setCube(1.0, 1.0, 1.0);
+  let vertices = setCube(1, 1, 1);
   let color = setColors();
   const n = vertices.length*indices.length; // The number of vertices
 
