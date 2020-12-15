@@ -239,6 +239,8 @@ class cone {
 };
 
 function main() {
+    console.log( VSHADER_SOURCE );
+    console.log( FSHADER_SOURCE);
     if (!gl) {
         console.log('Failed to get the rendering context for WebGL');
         return;
@@ -248,29 +250,28 @@ function main() {
         return;
     }
     const l_ModelViewMatrix =
-        gl.getUniformLocation(gl.program, 'ModelViewMatrix');
+        gl.getUniformLocation(gl.program, "ModelViewMatrix");
     const l_MVP = gl.getUniformLocation(gl.program, "MVP");
     const l_InverseTranspose =
         gl.getUniformLocation(gl.program, "NormalMatrix");
-    let light = {
-        position: gl.getUniformLocation(gl.program, "lights[0].Position"),
-        intensity: gl.getUniformLocation(gl.program, "lights[0].Intensity")
-    };
+    
 
-
-    const Ka = gl.getUniformLocation(gl.program, "Ka");
-    const Kd = gl.getUniformLocation(gl.program, "Ks");
-    const Ks = gl.getUniformLocation(gl.program, "Kd");
+    
     const Shininess = gl.getUniformLocation(gl.program, "Shininess");
-    const color = gl.getUniformLocation(gl.program, 'u_Color');
-    // 8 серебро 
-    gl.uniform3fv(Ka, [0.1923, 0.1923, 0.1923]);
-    gl.uniform3fv(Kd, [0.5075, 0.5075, 0.5075]);
-    gl.uniform3fv(Ks, [0.5083, 0.5083, 0.5083]);
+    const lightWorldPos = gl.getUniformLocation(gl.program, "u_lightWorldPosition");//vec3
+    const viewWorldPos = gl.getUniformLocation(gl.program, "u_viewWorldPosition");//vec3
+    const color = gl.getUniformLocation(gl.program, 'u_Color');//vec3
+    const lightColor = gl.getUniformLocation(gl.program, 'u_lightColor');//vec3
+    const specColor = gl.getUniformLocation(gl.program, 'u_specularColor');//vec3
+    
+
+   
     gl.uniform1f(Shininess, 32);
-    gl.uniform4fv(light.position, [-3, 0, -3, 1]);
-    gl.uniform3fv(light.intensity, [0.2, 0.2, 0.2]);
-    gl.uniform3fv(color, [ 197.0/255.0,244.0/255.0,199.0/255.0])
+    gl.uniform3fv(lightWorldPos, [3, -10, 0]);
+    gl.uniform3fv(viewWorldPos, [0, 0, 4]);
+    gl.uniform4fv(color, [ 197.0/255.0,244.0/255.0,199.0/255.0, 1]);
+    gl.uniform3fv(lightColor, vec3.normalize(vec3.create(), [1, 1, 1]));
+    gl.uniform3fv(specColor, vec3.normalize(vec3.create(), [1, 1, 1]) );
 
     let myCone = new cone();
     myCone.init(2, 3, gl, [0.1, 0.1, 0]);
@@ -289,7 +290,7 @@ function main() {
             let cameraMatrix = mat4.create();
             mat4.lookAt(cameraMatrix, [0, 0, 4], [0, 0, 0], [0, 1, 0]);
 
-            let viewMatrix = mat4.invert(mat4.create(), cameraMatrix);
+            let viewMatrix = mat4.invert([], cameraMatrix);
             let viewProjectionMatrix = mat4.multiply(mat4.create(), projectionMatrix, cameraMatrix);
 
             let worldMatrix = mat4.rotateY(mat4.create(), mat4.create(), i * Math.PI / 180);
@@ -324,44 +325,44 @@ const { mat2, mat3, mat4, vec2, vec3, vec4 } = glMatrix;
 const VSHADER_SOURCE =
     'attribute vec4 a_Position;\n' +
     'attribute vec3 a_Normal;\n' +
-
-    'struct LightInfo{\n' +
-    '   vec4 Position;\n' +
-    '   vec3 Intensity;\n' +
-    '};\n' +
-    'uniform LightInfo lights[5];\n' +
-    'uniform vec3 Kd;\n' +
-    'uniform vec3 Ka;\n' +
-    'uniform vec3 Ks;\n' +
-    'uniform float Shininess;\n' +
-    'uniform vec3 u_Color;\n'+
     'uniform mat4 ModelViewMatrix;\n' +
     'uniform mat4 NormalMatrix;\n' + //world inverse transpose
     'uniform mat4 MVP;\n' + //world view projection
-
-    'varying vec3 v_Color;\n' +
-    'vec3 ads( int lightIndex, vec4 position, vec3 norm ){\n' +
-    '   vec3 s = normalize( vec3(lights[lightIndex].Position - position) );\n' +
-    '   vec3 v = normalize(vec3(-position));\n' +
-    '   vec3 r = reflect( -s, norm );\n' +
-    '   vec3 I = lights[lightIndex].Intensity;\n' +
-    '   return I * ( Ka + Kd * max( dot(s, norm), 0.0 ) + Ks * pow( max( dot(r,v), 0.0 ), Shininess ) );\n' +
-    '}\n' +
+    'uniform vec3 u_lightWorldPosition;\n'+
+    'uniform vec3 u_viewWorldPosition;\n'+
+    'varying vec3 v_normal;\n'+
+    'varying vec3 v_surfaceToLight;\n'+
+    'varying vec3 v_surfaceToView;\n'+
 
     'void main() {\n' +
-    '   vec3 eyeNorm = normalize( mat3(NormalMatrix) * a_Normal);\n' +
-    '   vec4 eyePosition = ModelViewMatrix * a_Position;\n' +
-    '   v_Color = vec3(0.0);\n' +
-    '   for( int i = 0; i < 5; i++ )\n' +
-    '       v_Color += ads( i, eyePosition, eyeNorm );\n' +
-    '   v_Color *= u_Color;\n'+
-    '   gl_Position = MVP * a_Position;\n' +
+    '   gl_Position = MVP * a_Position;\n'+
+    '   v_normal = mat3(NormalMatrix) * a_Normal;\n'+
+    '   vec3 surfaceWorldPosition = (ModelViewMatrix* a_Position).xyz;\n'+
+    '   v_surfaceToLight = u_lightWorldPosition - surfaceWorldPosition;\n'+
+    '   v_surfaceToView = normalize(u_viewWorldPosition - surfaceWorldPosition);\n'+
     '}\n';
 const FSHADER_SOURCE =
     'precision mediump float;\n' +
-    'varying  vec3 v_Color;\n' +
-    'void main() {\n' +
-    'gl_FragColor = vec4(v_Color, 1.0);' +
+    'varying vec3 v_normal;\n'+
+    'varying vec3 v_surfaceToLight;\n'+
+    'varying vec3 v_surfaceToView;\n'+
+    'uniform vec4 u_Color;\n'+
+    'uniform float Shininess;\n'+
+    'uniform vec3 u_lightColor;\n'+
+    'uniform vec3 u_specularColor;\n'+
+    'void main() {\n'+
+    '  vec3 normal = normalize(v_normal);\n'+
+    '  vec3 surfaceToLightDirection = normalize(v_surfaceToLight);\n'+
+    '  vec3 surfaceToViewDirection = normalize(v_surfaceToView);\n'+
+    '  vec3 halfVector = normalize(surfaceToLightDirection + surfaceToViewDirection);\n'+
+    '  float light = dot(normal, surfaceToLightDirection);\n'+
+    '  float specular = 0.0;\n'+
+    '  if (light > 0.0) {\n'+
+    '    specular = pow(dot(normal, halfVector), Shininess);\n'+
+    '  }\n'+
+    '  gl_FragColor = u_Color;\n'+
+    ' gl_FragColor.rgb *= light * u_lightColor;\n'+
+    ' gl_FragColor.rgb += specular * u_specularColor;\n'+
     '}\n';
 
 const canvas = document.getElementById('webgl');
