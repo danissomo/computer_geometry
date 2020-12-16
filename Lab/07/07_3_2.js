@@ -141,10 +141,32 @@ function main() {
 
   //по дефолту получаю вид передней грани (синяя) тк webgl теперь учитывае глубину
 
-  //для задней (красная)
-  mat4.lookAt(rotationmatrix, vec3.fromValues(0, 0, 1), vec3.fromValues(0,0,0), vec3.fromValues(0, 1, 0));
-  //для передней(синяя)
-  // mat4.lookAt(rotationmatrix, vec3.fromValues(0, 0, -1), vec3.fromValues(0,0,0), vec3.fromValues(0, 1, 0));
+  function lab7_3_1(){
+    mat4.lookAt(rotationmatrix, vec3.fromValues(0, 0, -1), vec3.fromValues(0,0,0), vec3.fromValues(0, 1, 0));
+  }
+  function lab7_3_2(){
+    mat4.lookAt(rotationmatrix, vec3.fromValues(0, 0, 1), vec3.fromValues(0,0,0), vec3.fromValues(0, 1, 0));
+  }
+  function lab7_3_3(){
+    mat4.lookAt(rotationmatrix, vec3.fromValues(0, 1, 0), vec3.fromValues(0,0,0), vec3.fromValues(0, 0, 1));
+  }
+  function lab7_3_4(){
+    mat4.lookAt(rotationmatrix, vec3.fromValues(1, 0, 0), vec3.fromValues(0,0,0), vec3.fromValues(0, 1, 0));
+  }
+  function lab7_3_5(){
+    mat4.lookAt(rotationmatrix, vec3.fromValues(0.01,  0.01, -0.01), vec3.fromValues(0,0,0), vec3.fromValues(-1,  1, -1));
+    
+  }
+  function lab7_3_6(){
+    mat4.lookAt(rotationmatrix, vec3.fromValues(0.01,  0.03, -0.02), vec3.fromValues(0,0,0), vec3.fromValues(-0.01,  0.03, -0.02));
+    
+  }
+  //lab7_3_1();
+  //lab7_3_2();
+  //lab7_3_3();
+  //lab7_3_4();
+  //lab7_3_5();
+  lab7_3_6();
   gl.uniformMatrix4fv(u_Mat, 0, rotationmatrix);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.drawArrays(gl.LINES, 0, n);
@@ -153,7 +175,7 @@ function main() {
 }
 
 function initVertexBuffers(gl) {
-  let vertices = setCube(1.0, 1.0, 1.0);
+  let vertices = setCube(1, 1, 1);
   let color = setColors();
   const n = vertices.length; // The number of vertices
 
