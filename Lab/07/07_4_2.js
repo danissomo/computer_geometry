@@ -54,31 +54,31 @@ function setCube(width, height, length) {
 }
 function setColors() {
   return new Uint8Array([
-    0,0,255,
-    0,0,255,
-    0,0,255,
-    0,0,255,
-    0,0,255,
-    0,0,255,
-    0,0,255,
-    0,0,255,
-    0,0,255,
-    0,0,255,
-    0,0,255,
-    0,0,255,
-    255,0,0,
-    255,0,0,
-    255,0,0,
-    255,0,0,
-    255,0,0,
-    255,0,0,
-    255,0,0,
-    255,0,0,
-    255,0,0,
-    255,0,0,
-    255,0,0,
-    255,0,0,
-    255,0,0,
+    0, 0, 255,
+    0, 0, 255,
+    0, 0, 255,
+    0, 0, 255,
+    0, 0, 255,
+    0, 0, 255,
+    0, 0, 255,
+    0, 0, 255,
+    0, 0, 255,
+    0, 0, 255,
+    0, 0, 255,
+    0, 0, 255,
+    255, 0, 0,
+    255, 0, 0,
+    255, 0, 0,
+    255, 0, 0,
+    255, 0, 0,
+    255, 0, 0,
+    255, 0, 0,
+    255, 0, 0,
+    255, 0, 0,
+    255, 0, 0,
+    255, 0, 0,
+    255, 0, 0,
+    255, 0, 0,
   ]);
 }
 // Vertex shader program
@@ -126,7 +126,7 @@ function main() {
 
   // Specify the color for clearing <canvas>
   gl.clearColor(0, 0, 0, 0);
-  
+
   gl.enable(gl.DEPTH_TEST);
   gl.clear(gl.DEPTH_BUFFER_BIT);
   // Clear <canvas>
@@ -137,9 +137,44 @@ function main() {
 
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.drawArrays(gl.LINES, 0, n);
-  mat4.frustum(rotationmatrix,-1, 1, -1, 1, 1, 8);
-  mat4.translate(rotationmatrix, rotationmatrix,  vec3.fromValues(0,0, -2));
-  mat4.rotateY(rotationmatrix,rotationmatrix, 45*Math.PI/180);
+  function lab7_4_1() {
+    mat4.frustum(rotationmatrix, -1, 1, -1, 1, 1, 8);
+    mat4.translate(rotationmatrix, rotationmatrix, vec3.fromValues(0, 0, -2));
+    mat4.rotateY(rotationmatrix, rotationmatrix, 0 * Math.PI / 180);
+  }
+  function lab7_4_2() {
+    mat4.frustum(rotationmatrix, -1, 1, -1, 1, 1, 8);
+    mat4.translate(rotationmatrix, rotationmatrix, vec3.fromValues(0, 0, -2));
+    mat4.rotateY(rotationmatrix, rotationmatrix, 45 * Math.PI / 180);
+  }
+  function lab7_4_3() {
+    mat4.frustum(rotationmatrix, -1, 1, -1, 1, 1, 8);
+    mat4.translate(rotationmatrix, rotationmatrix, vec3.fromValues(0, 0, -2));
+    mat4.rotateX(rotationmatrix, rotationmatrix, 35 * Math.PI / 180);
+    mat4.rotateY(rotationmatrix, rotationmatrix, 45 * Math.PI / 180);
+    
+  }
+  function lab7_4_4() {
+    mat4.perspective(rotationmatrix, 60 *Math.PI/180.0, 1.0 , 1, 8)
+    mat4.translate(rotationmatrix, rotationmatrix, vec3.fromValues(0, 0, -2));
+  }
+  function lab7_4_5() {
+    mat4.perspective(rotationmatrix, 60*Math.PI/180.0, 1.0 , 1, 8)
+    mat4.translate(rotationmatrix, rotationmatrix, vec3.fromValues(0, 0, -2));
+    mat4.rotateY(rotationmatrix, rotationmatrix, 45 * Math.PI / 180);
+  }
+  function lab7_4_6() {
+    mat4.perspective(rotationmatrix, 60*Math.PI/180.0, 1.0 , 1, 8)
+    mat4.translate(rotationmatrix, rotationmatrix, vec3.fromValues(0, 0, -2));
+    mat4.rotateX(rotationmatrix, rotationmatrix, 35 * Math.PI / 180);
+    mat4.rotateY(rotationmatrix, rotationmatrix, 45 * Math.PI / 180);
+  }
+  //lab7_4_1();
+  //lab7_4_2();
+  //lab7_4_3();
+  //lab7_4_4();
+  //lab7_4_5();
+  lab7_4_6(); 
   //по дефолту получаю вид передней грани (синяя) тк webgl теперь учитывае глубину
   //для задней (красная)
   //mat4.lookAt(rotationmatrix, vec3.fromValues(0, 0, 1), vec3.fromValues(0,0,0), vec3.fromValues(0, 1, 0));
@@ -153,7 +188,7 @@ function main() {
 }
 
 function initVertexBuffers(gl) {
-  let vertices = setCube(1.0, 1.0, 1.0);
+  let vertices = setCube(1, 1, 1);
   let color = setColors();
   const n = vertices.length; // The number of vertices
 
