@@ -142,9 +142,9 @@ function main() {
   //по дефолту получаю вид передней грани (синяя) тк webgl теперь учитывае глубину
 
   //для задней (красная)
-  //mat4.lookAt(rotationmatrix, vec3.fromValues(0, 0, 1), vec3.fromValues(0,0,0), vec3.fromValues(0, 1, 0));
+  mat4.lookAt(rotationmatrix, vec3.fromValues(0, 0, 0.6), vec3.fromValues(0,0,0), vec3.fromValues(0, 1, 0));
   //для передней(синяя)
-  // mat4.lookAt(rotationmatrix, vec3.fromValues(0, 0, -1), vec3.fromValues(0,0,0), vec3.fromValues(0, 1, 0));
+  //mat4.lookAt(rotationmatrix, vec3.fromValues(0, 0, -0.6), vec3.fromValues(0,0,0), vec3.fromValues(0, 1, 0));
   gl.uniformMatrix4fv(u_Mat, 0, rotationmatrix);
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.drawArrays(gl.LINES, 0, n);
@@ -153,7 +153,7 @@ function main() {
 }
 
 function initVertexBuffers(gl) {
-  let vertices = setCube(1.0, 1.0, 1.0);
+  let vertices = setCube(0.5, 0.5, 0.5);
   let color = setColors();
   const n = vertices.length; // The number of vertices
 

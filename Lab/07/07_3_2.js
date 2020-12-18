@@ -140,25 +140,37 @@ function main() {
   mat4.fromTranslation(rotationmatrix, vec3.fromValues(0, 0, 0));
 
   //по дефолту получаю вид передней грани (синяя) тк webgl теперь учитывае глубину
-
+  let viewMatrix= mat4.create();
   function lab7_3_1(){
-    mat4.lookAt(rotationmatrix, vec3.fromValues(0, 0, -1), vec3.fromValues(0,0,0), vec3.fromValues(0, 1, 0));
+    mat4.lookAt(viewMatrix, vec3.fromValues(0, 0, -1), vec3.fromValues(0,0,0), vec3.fromValues(0, 1, 0));
+    mat4.ortho(rotationmatrix, -1, 1, -1, 1, 1, 8);
+    mat4.multiply(rotationmatrix, rotationmatrix, viewMatrix);
   }
   function lab7_3_2(){
-    mat4.lookAt(rotationmatrix, vec3.fromValues(0, 0, 1), vec3.fromValues(0,0,0), vec3.fromValues(0, 1, 0));
+    mat4.lookAt(viewMatrix, vec3.fromValues(0, 0, 1), vec3.fromValues(0,0,0), vec3.fromValues(0, 1, 0));
+    mat4.ortho(rotationmatrix, -1, 1, -1, 1, 1, 8);
+    mat4.multiply(rotationmatrix, rotationmatrix, viewMatrix);
   }
   function lab7_3_3(){
-    mat4.lookAt(rotationmatrix, vec3.fromValues(0, 1, 0), vec3.fromValues(0,0,0), vec3.fromValues(0, 0, 1));
+    mat4.lookAt(viewMatrix, vec3.fromValues(0, 1, 0), vec3.fromValues(0,0,0), vec3.fromValues(0, 0, 1));
+    mat4.ortho(rotationmatrix, -1, 1, -1, 1, 1, 8);
+    mat4.multiply(rotationmatrix, rotationmatrix, viewMatrix);
   }
   function lab7_3_4(){
-    mat4.lookAt(rotationmatrix, vec3.fromValues(1, 0, 0), vec3.fromValues(0,0,0), vec3.fromValues(0, 1, 0));
+    mat4.lookAt(viewMatrix, vec3.fromValues(1, 0, 0), vec3.fromValues(0,0,0), vec3.fromValues(0, 1, 0));
+    mat4.ortho(rotationmatrix, -1, 1, -1, 1, 1, 8);
+    mat4.multiply(rotationmatrix, rotationmatrix, viewMatrix);
   }
   function lab7_3_5(){
-    mat4.lookAt(rotationmatrix, vec3.fromValues(0.01,  0.01, -0.01), vec3.fromValues(0,0,0), vec3.fromValues(-1,  1, -1));
+    mat4.lookAt(viewMatrix, vec3.fromValues(1,  1, -1), vec3.fromValues(0,0,0), vec3.fromValues(-1,  1, -1));
+    mat4.ortho(rotationmatrix, -1, 1, -1, 1, 1, 8);
+    mat4.multiply(rotationmatrix, rotationmatrix, viewMatrix);
     
   }
   function lab7_3_6(){
-    mat4.lookAt(rotationmatrix, vec3.fromValues(0.01,  0.03, -0.02), vec3.fromValues(0,0,0), vec3.fromValues(-0.01,  0.03, -0.02));
+    mat4.lookAt(viewMatrix, vec3.fromValues(0.6,  0.4, -0.5), vec3.fromValues(0,0,0), vec3.fromValues(-0.6,  0.4, 0.5));
+    mat4.ortho(rotationmatrix, -1, 1, -1, 1, 0, 8);
+    mat4.multiply(rotationmatrix, rotationmatrix, viewMatrix);
     
   }
   //lab7_3_1();
@@ -175,7 +187,7 @@ function main() {
 }
 
 function initVertexBuffers(gl) {
-  let vertices = setCube(1, 1, 1);
+  let vertices = setCube(0.5, 0.5, 0.5);
   let color = setColors();
   const n = vertices.length; // The number of vertices
 
